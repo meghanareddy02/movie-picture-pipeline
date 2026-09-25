@@ -1,7 +1,6 @@
-node_modules
-.pytest_cache
-.terraform
-.terraform.tfstate.lock.info
-*.tfstate.backup
-credentials
-.pytest_cache
+﻿node_modules/
+__pycache__/
+*.pyc
+.env
+error.txt
+install-output.txt

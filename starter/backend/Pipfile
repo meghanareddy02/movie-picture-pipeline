@@ -5,14 +5,10 @@ name = "pypi"
 
 [packages]
 flask = "*"
-uwsgi = "*"
-flask-cors = "*"
 pytest = "*"
-
-[dev-packages]
-black = "*"
 flake8 = "*"
 coverage = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.10"
@@ -23,3 +19,5 @@ test = "pytest -v"
 lint = "flake8"
 report = "coverage run -m pytest -v"
 lint-fail = "flake8 --max-line-length=88"
+
+[dev-packages]
