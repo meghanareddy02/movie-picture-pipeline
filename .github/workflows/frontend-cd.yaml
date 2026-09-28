@@ -48,3 +48,5 @@ jobs:
         run: |
           kubectl set image deployment/frontend frontend=384324911470.dkr.ecr.us-east-1.amazonaws.com/frontend:${{ github.sha }} -n default
           kubectl rollout status deployment/frontend -n default
+
+# trigger new run
