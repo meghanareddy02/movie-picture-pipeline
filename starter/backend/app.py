@@ -1,26 +1,17 @@
-from . import app
 import os
+from flask import Flask
+from flask_cors import CORS
 
+from movies import movies_api
 
-def test_movies_endpoint_returns_200():
-    with app.test_client() as client:
-        status_code = os.getenv("FAIL_TEST", 200)
-        response = client.get("/movies/")
-        assert response.status_code == status_code
+app = Flask(__name__)
+CORS(app)
 
+app.register_blueprint(movies_api)
 
-def test_movies_endpoint_returns_json():
-    with app.test_client() as client:
-        response = client.get("/movies/")
-        assert response.content_type == "application/json"
-
-
-def test_movies_endpoint_returns_valid_data():
-    with app.test_client() as client:
-        response = client.get("/movies/")
-        data = response.get_json()
-        assert isinstance(data, dict)
-        assert "movies" in data
-        assert isinstance(data.get("movies"), list)
-        assert len(data["movies"]) > 0
-        assert "title" in data["movies"][0]
+if __name__ == "__main__":
+    app.run(
+        debug=True,
+        host="0.0.0.0",
+        port=int(os.getenv("FLASK_RUN_PORT", 5000)),
+    )
