@@ -1,13 +1,13 @@
-FROM node:18.14.2-alpine3.17
-
+FROM node:18-alpine as build
 WORKDIR /app
-
 COPY package*.json ./
-
-RUN npm install
-
+RUN npm ci
 COPY . .
+ARG REACT_APP_MOVIE_API_URL
+ENV REACT_APP_MOVIE_API_URL=$REACT_APP_MOVIE_API_URL
+RUN npm run build
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["-g", "daemon off;"]
