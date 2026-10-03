@@ -1,14 +1,14 @@
-FROM python:3.10-alpine
+FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY Pipfile Pipfile.lock ./
+COPY Pipfile ./
+# Convert Pipfile requirements or copy app files
+COPY . /app
 
-RUN pip install --no-cache-dir pipenv && \
-    pipenv install --system --deploy
-
-COPY . .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install flask flask-cors pytest gunicorn
 
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
