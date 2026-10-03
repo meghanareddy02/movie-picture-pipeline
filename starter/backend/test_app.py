@@ -4,22 +4,28 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 import app
 
+# Fallback in case the Flask instance in app.py is named 'application' or 'api'
+flask_app = getattr(app, "app", None) or getattr(app, "application", None) or getattr(app, "api", None)
+if flask_app is None:
+    # If app itself is the Flask app instance
+    flask_app = app
+
 
 def test_movies_endpoint_returns_200():
-    with app.test_client() as client:
+    with flask_app.test_client() as client:
         status_code = int(os.getenv("FAIL_TEST", 200))
         response = client.get("/movies/")
         assert response.status_code == status_code
 
 
 def test_movies_endpoint_returns_json():
-    with app.test_client() as client:
+    with flask_app.test_client() as client:
         response = client.get("/movies/")
         assert response.content_type == "application/json"
 
 
 def test_movies_endpoint_returns_valid_data():
-    with app.test_client() as client:
+    with flask_app.test_client() as client:
         response = client.get("/movies/")
         data = response.get_json()
         assert isinstance(data, dict)
