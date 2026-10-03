@@ -49,10 +49,6 @@ jobs:
   build-and-deploy:
     needs: [lint, test]
     runs-on: ubuntu-latest
-    env:
-      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      ECR_REPOSITORY: movie-picture-backend
-      IMAGE_TAG: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v3
 
@@ -72,6 +68,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: movie-picture-backend
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd starter/backend
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -82,6 +82,8 @@ jobs:
           aws eks update-kubeconfig --name movie-cluster --region us-east-1
 
       - name: Deploy to EKS
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           kubectl set image deployment/backend-deployment backend=$ECR_REGISTRY/movie-picture-backend:${{ github.sha }} -n default --record=true || \
           kubectl apply -f starter/backend/kubernetes/backend-deployment.yaml
