@@ -46,8 +46,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip installs --upgrade pip || python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv install --system --deploy
 
       - name: Run tests
         run: |
@@ -87,5 +88,5 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/backend-deployment backend=$[[ steps.login-ecr.outputs.registry ]]/backend:${{ github.sha }}
+          kubectl set image deployment/backend-deployment backend=${{ steps.login-ecr.outputs.registry }}/backend:${{ github.sha }}
           kubectl rollout status deployment/backend-deployment
