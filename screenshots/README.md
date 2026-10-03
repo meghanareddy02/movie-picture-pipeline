@@ -1,1 +1,0 @@
-Project submission evidence screenshots.
