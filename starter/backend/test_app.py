@@ -1,10 +1,13 @@
-from . import app
+import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+import app
 
 
 def test_movies_endpoint_returns_200():
     with app.test_client() as client:
-        status_code = os.getenv("FAIL_TEST", 200)
+        status_code = int(os.getenv("FAIL_TEST", 200))
         response = client.get("/movies/")
         assert response.status_code == status_code
 
