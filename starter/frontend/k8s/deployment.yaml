@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: meghanaaa2/movie-frontend:latest
+          image: placeholder-image:latest
           ports:
             - containerPort: 80
