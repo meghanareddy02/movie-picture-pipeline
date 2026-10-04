@@ -23,12 +23,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          rm -f Pipfile.lock
-          pip install pipenv
-          pipenv install --dev --skip-lock
+          pip install flake8
 
       - name: Run flake8
-        run: pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
   test:
     runs-on: ubuntu-latest
@@ -47,12 +45,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          rm -f Pipfile.lock
-          pip install pipenv
-          pipenv install --dev --skip-lock
+          pip install flask flask-cors pytest
 
       - name: Run pytest
-        run: pipenv run pytest
+        run: pytest
 
   build:
     needs: [lint, test]
