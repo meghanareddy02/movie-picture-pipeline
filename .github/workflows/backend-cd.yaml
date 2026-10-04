@@ -82,7 +82,7 @@ jobs:
 
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --name <your-eks-cluster-name> --region us-east-1
+          aws eks update-kubeconfig --name my-cluster-name --region us-east-1
 
       - name: Deploy to EKS
         env:
