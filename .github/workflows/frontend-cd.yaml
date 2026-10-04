@@ -56,5 +56,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies & Build application
+        run: |
+          npm ci
+          npm run build
+
       - name: Build Docker image (local check)
         run: docker build -t frontend:${{ github.sha }} .
