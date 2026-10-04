@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          rm -f Pipfile.lock
           pip install pipenv
           pipenv install --dev --skip-lock
 
@@ -46,6 +47,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          rm -f Pipfile.lock
           pip install pipenv
           pipenv install --dev --skip-lock
 
