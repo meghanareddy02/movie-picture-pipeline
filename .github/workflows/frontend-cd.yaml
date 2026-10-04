@@ -7,88 +7,79 @@ on:
 
 jobs:
   lint:
-    name: Lint Frontend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: starter/frontend
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: starter/frontend/package-lock.json
-      - name: Install Dependencies
-        run: npm ci
-      - name: Run Lint
-        run: npm run lint
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+      - name: Run lint
+        run: |
+          cd starter/frontend
+          npm run lint --if-present
 
   test:
-    name: Test Frontend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: starter/frontend
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: starter/frontend/package-lock.json
-      - name: Install Dependencies
-        run: npm ci
-      - name: Run Tests
-        run: npm test -- --watchAll=false
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+      - name: Run tests
+        run: |
+          cd starter/frontend
+          npm test -- --watchAll=false
 
   build-and-deploy:
-    name: Build and Deploy Frontend
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: frontend-repo
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: movie-frontend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build \
-            --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} \
-            -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
-            -t $REGISTRY/$REPOSITORY:latest \
-            starter/frontend
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY/$REPOSITORY:latest
+          docker build --build-arg REACT_APP_MOVIE_API_URL=http://a-backend-lb-url-or-ip -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./starter/frontend
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name udacity-cluster
+          aws eks update-kubeconfig --name <your-eks-cluster-name> --region us-east-1
 
       - name: Deploy to EKS
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: frontend-repo
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: movie-frontend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          kubectl set image deployment/frontend-deployment frontend=$REGISTRY/$REPOSITORY:$IMAGE_TAG -n default || kubectl apply -f starter/kubernetes/frontend.yaml
-          kubectl rollout status deployment/frontend-deployment -n default
+          cd starter/frontend/k8s
+          sed -i "s|image:.*|image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" deployment.yaml
+          kubectl apply -k .
+          kubectl rollout status deployment/frontend -n default
